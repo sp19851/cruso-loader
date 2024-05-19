@@ -2,7 +2,7 @@ Config = {}
 
 Config.Init = {
     pedModel = "IG_Req_Officer",
-    pedPosition = vector4(-636.2, -1779.0, 24.13, 332.58), --vector4(-253.71, -971.08, 31.22, 163.49),
+    pedPosition = vector4(-253.71, -971.08, 31.22, 163.49), --vector4(-636.2, -1779.0, 24.13, 332.58),
     pedScenario = "WORLD_HUMAN_CLIPBOARD",
     targetLabel = "Начать работу",
     targetLabelDone = "Завершить работу",
@@ -44,7 +44,7 @@ Config.Points = {
     },
     {
         positionTake = vector4(-579.44, -1788.84, 22.7, 308.49),
-        positionPut = vector4(-640.24, -1779.26, 24.27, 52.75),
+        positionPut = vector4(-640.24, -1779.26, 24.27, 52.75)
         count = 3,  --20
     },
     {

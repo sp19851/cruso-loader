@@ -7,7 +7,7 @@ local Blips = {}
 local Props = {}
 
 -----Functions----
-local function DisplayHelpTextThisFrame(helpText)
+--[[local function DisplayHelpTextThisFrame(helpText)
     BeginTextCommandDisplayHelp("CELL_EMAIL_BCON")
     local s = helpText
     for i = 1, string.len(helpText) do 
@@ -28,6 +28,24 @@ local function DrawTxt(x, y, width, height, scale, text, r, g, b, a, _)
     BeginTextCommandDisplayText('STRING')
     AddTextComponentSubstringPlayerName(text)
     EndTextCommandDisplayText(x - width / 2, y - height / 2 + 0.005)
+end]]
+
+local function Draw3DText(coords, str)
+    local onScreen, worldX, worldY = World3dToScreen2d(coords.x, coords.y, coords.z)
+    local camCoords = GetGameplayCamCoord()
+    local scale = 200 / (GetGameplayCamFov() * #(camCoords - coords))
+    if onScreen then
+        SetTextScale(1.0, 0.5 * scale)
+        SetTextFont(4)
+        SetTextColour(255, 255, 255, 255)
+        SetTextEdge(2, 0, 0, 0, 150)
+        SetTextProportional(1)
+        SetTextOutline()
+        SetTextCentre(1)
+        BeginTextCommandDisplayText('STRING')
+        AddTextComponentSubstringPlayerName(str)
+        EndTextCommandDisplayText(worldX, worldY)
+    end
 end
 
 local function loadModel(model)
@@ -76,7 +94,7 @@ local function createPed(data)
                 end,
                 canInteract = function()
                     local hours = GetClockHours()
-                    if ( hours>= data.timeStart and  hours <= data.timeEnd) then return true else 
+                    if (not currentPoint and hours>= data.timeStart and  hours <= data.timeEnd) then return true else 
                         --QBCore.Functions.Notify("В данное время у меня нет для тебя работенки", "error", 7500)
                         return false 
                     end
@@ -123,8 +141,8 @@ local function Reset(full)
     exports['qb-core']:HideText()
 end
 
-local function createRouteBlip()
-    local blip = AddBlipForCoord(currentPoint.positionTake)
+local function createRouteBlip(coords)
+    local blip = AddBlipForCoord(coords)
     SetBlipRoute(blip, true)
     SetBlipRouteColour(blip, 5)
     Blips["routeBlip"] = blip
@@ -163,11 +181,11 @@ function GetJob()
         isProp = false,
         isTake = false
     }
-    createRouteBlip()
+    createRouteBlip(currentPoint.positionTake)
     QBCore.Functions.Notify("Вы приняты. Следуйте к месту работы", "primary", 7500)
 end
 function GetIncome()
-    if (currentPoint) then
+    if (currentPoint.done) then
         TriggerServerEvent("cruso-loader:server:Pay", Config.Init.inCome)
     else
         QBCore.Functions.Notify("Вы не выполнили условия, расчета не получите", "error", 7500)
@@ -241,16 +259,15 @@ Citizen.CreateThread(function()
         local sleep = 0
         if (currentPoint ~= nil) then
             if (not currentPoint.isProp and not currentPoint.done) then
-                DrawTxt(0.865, 1.44, 1.0, 1.0, 0.6,  currentPoint.counter.." из " ..currentPoint.count.." ходок", 255, 255, 255, 255)
+                
                 local pos = vector3(currentPoint.positionTake.x, currentPoint.positionTake.y, currentPoint.positionTake.z)
                 local dist = #(pos - GetEntityCoords(PlayerPedId()))
                 if (dist <= Config.Marker.dist) then
                     DrawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, Config.Marker.scale.x, Config.Marker.scale.y, Config.Marker.scale.z, 
                         Config.Marker.r, Config.Marker.g, Config.Marker.b, 255, false, true, 2, false, false, false, false)
                     if (dist <= 1) then
-                        exports['qb-core']:DrawText("[E] - взять груз", 'left')
+                        Draw3DText(pos, "[E] - взять груз")
                         if (IsControlJustReleased(0, 38)) then
-                            exports['qb-core']:HideText()
                             QBCore.Functions.Progressbar('take_prop', "Берем груз", 3500, false, false, {
                                 disableMovement = true,
                                 disableCarMovement = true,
@@ -261,29 +278,28 @@ Citizen.CreateThread(function()
                                 anim = 'enter',
                             }, {}, {}, 
                             function()
+                                currentPoint.needNotif = true
                                 TakeProp()
                                 RemoveRouteBlip()
+                                createRouteBlip(currentPoint.positionPut)
                                 currentPoint.isProp = true
                                 
                             end)
                             Citizen.Wait(5000)
                         end
-                    else
-                        exports['qb-core']:HideText()
                     end
                 end
             elseif (currentPoint.isProp and not currentPoint.done) then
-                DrawTxt(0.865, 1.44, 1.0, 1.0, 0.6,  currentPoint.counter.." из " ..currentPoint.count.." ходок", 255, 255, 255, 255)
+                
                 local pos = vector3(currentPoint.positionPut.x, currentPoint.positionPut.y, currentPoint.positionPut.z)
                 local dist = #(pos - GetEntityCoords(PlayerPedId()))
                 if (dist <= Config.Marker.dist) then
                     DrawMarker(1, pos.x, pos.y, pos.z - 0.98, 0, 0, 0, 0, 0, 0, Config.Marker.scale.x, Config.Marker.scale.y, Config.Marker.scale.z, 
                      Config.Marker.r, Config.Marker.g, Config.Marker.b, 255, false, true, 2, false, false, false, false)
                     if (dist <= 2 ) then
-                        exports['qb-core']:DrawText("[E] - положить груз", 'left')
+                        Draw3DText(pos, "[E] - положить груз")
                         if (IsControlJustReleased(0, 38)) then
                             RemoveProp()
-                            exports['qb-core']:HideText()
                             QBCore.Functions.Progressbar('take_prop', "Кладем груз", 3500, false, false, {
                                     disableMovement = true,
                                     disableCarMovement = true,
@@ -299,11 +315,12 @@ Citizen.CreateThread(function()
                                     if (currentPoint.counter >= currentPoint.count) then
                                         currentPoint.done = true
                                         QBCore.Functions.Notify("Работа сделана. Вернитесь к менеджеру за расчетом", "success", 7500)
+                                    else
+                                        RemoveRouteBlip()
+                                        createRouteBlip(currentPoint.positionTake)
                                     end
                             end)
                             Citizen.Wait(5000)
-                        else
-                            exports['qb-core']:HideText()
                         end
                     end
                 end
@@ -314,3 +331,16 @@ Citizen.CreateThread(function()
     end
 end)
 
+--Notif control--
+Citizen.CreateThread(function()
+    while true do
+        local sleep = 1000
+        if (currentPoint) then
+            if (currentPoint.needNotif) then
+                exports['qb-core']:DrawText(currentPoint.counter.." из " ..currentPoint.count.." ходок", 'right')
+            end
+            sleep = 0
+        end
+        Citizen.Wait(sleep)
+    end
+end)
