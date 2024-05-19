@@ -15,7 +15,8 @@ Config.Init = {
     },
     inCome = 50,
     timeStart = 8,
-    timeEnd = 15
+    timeEnd = 15,
+    outTimeNotif = "Какого ты приперся именно сейчас?! Я работаю с 8 до 15."
 
 }
 

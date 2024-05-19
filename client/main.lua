@@ -93,12 +93,11 @@ local function createPed(data)
                     GetJob()
                 end,
                 canInteract = function()
-                    local hours = GetClockHours()
-                    if (not currentPoint and hours>= data.timeStart and  hours <= data.timeEnd) then return true else 
-                        --QBCore.Functions.Notify("В данное время у меня нет для тебя работенки", "error", 7500)
-                        return false 
+                    if (not currentPoint) then return true else 
+                        return false
                     end
                 end,
+                
             },
             {
                 label = data.targetLabelDone,
@@ -167,22 +166,31 @@ end
 end]]
 
 function GetJob()
-    local point = Config.Points[math.random(1, #Config.Points)]
-    while (currentPoint ~= null and point.positionTake == currentPoint.positionTake ) do
-        point = Config.Points[math.random(1, #Config.Points)]
-        Citizen.Wait(500)
+    local hours = GetClockHours()
+    if ( hours>= Config.Init.timeStart and  hours <= Config.Init.timeEnd) then 
+        local point = Config.Points[math.random(1, #Config.Points)]
+        while (currentPoint ~= null and point.positionTake == currentPoint.positionTake ) do
+            point = Config.Points[math.random(1, #Config.Points)]
+            Citizen.Wait(500)
+        end
+        currentPoint = {
+            positionTake = point.positionTake,
+            positionPut = point.positionPut,
+            count = point.count,
+            counter = 0,
+            done = false,
+            isProp = false,
+            isTake = false
+        }
+        createRouteBlip(currentPoint.positionTake)
+        QBCore.Functions.Notify("Вы приняты. Следуйте к месту работы", "primary", 7500)
+    else 
+        QBCore.Functions.Notify(Config.Init.outTimeNotif, "error", 7500)
     end
-    currentPoint = {
-        positionTake = point.positionTake,
-        positionPut = point.positionPut,
-        count = point.count,
-        counter = 0,
-        done = false,
-        isProp = false,
-        isTake = false
-    }
-    createRouteBlip(currentPoint.positionTake)
-    QBCore.Functions.Notify("Вы приняты. Следуйте к месту работы", "primary", 7500)
+
+
+
+    
 end
 function GetIncome()
     if (currentPoint.done) then
@@ -315,6 +323,9 @@ Citizen.CreateThread(function()
                                     if (currentPoint.counter >= currentPoint.count) then
                                         currentPoint.done = true
                                         QBCore.Functions.Notify("Работа сделана. Вернитесь к менеджеру за расчетом", "success", 7500)
+                                        RemoveRouteBlip()
+                                        createRouteBlip(Config.Init.pedPosition)
+                                        currentPoint.needNotif = false
                                     else
                                         RemoveRouteBlip()
                                         createRouteBlip(currentPoint.positionTake)
