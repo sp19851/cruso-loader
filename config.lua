@@ -44,7 +44,7 @@ Config.Points = {
     },
     {
         positionTake = vector4(-579.44, -1788.84, 22.7, 308.49),
-        positionPut = vector4(-640.24, -1779.26, 24.27, 52.75)
+        positionPut = vector4(-640.24, -1779.26, 24.27, 52.75),
         count = 3,  --20
     },
     {
