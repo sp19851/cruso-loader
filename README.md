@@ -9,8 +9,8 @@ Cruso_loader — это простенький скрипт **работы гр�
  ## Разработчик Mr.Cruso 
  <span><img width="256" height="128" src="http://pm1.narvii.com/7599/8e1213d7f14bedf83a16de7392b0c2310fbfdf36r1-720-400v2_hq.jpg"></span>
  ## 👉 Присоединяйтесь
-[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/TGPVJ8sJX2)
-[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/cBGeDWE4gy) 
+
+[![Discord](https://img.shields.io/badge/Discord-%237289DA.svg?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/buRf3TkD6w) 
 
 
 
